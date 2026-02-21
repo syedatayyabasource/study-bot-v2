@@ -1,4 +1,3 @@
-from mangum import Mangum
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
@@ -9,13 +8,14 @@ from langchain_mongodb import MongoDBChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from fastapi.middleware.cors import CORSMiddleware
+from mangum import Mangum
 
 # Load environment variables
 load_dotenv()
 
 app = FastAPI(title="AI Study Assistant")
 
-# --- CORS SETTINGS (Frontend connection ke liye zaroori) ---
+# --- CORS SETTINGS ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,6 +26,7 @@ app.add_middleware(
 @app.get("/", response_class=HTMLResponse)
 async def home():
     try:
+        # Serving the frontend
         with open("index.html", "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
@@ -49,7 +50,7 @@ chain = prompt | llm
 def get_memory(session_id: str):
     uri = os.getenv("MONGO_URI")
     if not uri:
-        raise ValueError("MONGO_URI not found")
+        raise ValueError("MONGO_URI environment variable not set")
     
     return MongoDBChatMessageHistory(
         connection_string=uri, 
@@ -65,10 +66,9 @@ bot_with_history = RunnableWithMessageHistory(
     history_messages_key="history"
 )
 
-# --- FRONTEND SE MATCH KARNE KE LIYE YAHAN 'question' KIYA HAI ---
 class ChatInput(BaseModel):
     session_id: str
-    question: str  # Frontend 'question' bhej raha hai
+    question: str 
 
 @app.post("/chat")
 async def chat_endpoint(data: ChatInput):
@@ -85,4 +85,6 @@ async def chat_endpoint(data: ChatInput):
     except Exception as e:
         print(f"ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Vercel Handler
 handler = Mangum(app)
