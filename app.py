@@ -7,30 +7,36 @@ from langchain_groq import ChatGroq
 from langchain_mongodb import MongoDBChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load environment variables
 load_dotenv()
 
 app = FastAPI(title="AI Study Assistant")
 
-# --- YEH NEW ADDITION HAI FRONTEND KE LIYE ---
+# --- CORS SETTINGS (Frontend connection ke liye zaroori) ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/", response_class=HTMLResponse)
 async def home():
     try:
-        # Yeh aapki index.html file ko link par load karega
         with open("index.html", "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
-        return "<h1>Index.html not found!</h1><p>Please make sure you uploaded index.html to your GitHub repo.</p>"
+        return "<h1>Index.html not found!</h1>"
 
-# AI Setup with error checking
+# AI Setup
 api_key = os.getenv("GROQ_API_KEY")
 llm = ChatGroq(
     model_name="llama-3.3-70b-versatile", 
     groq_api_key=api_key
 )
 
-# Study Bot Prompt Logic
 prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful AI Study Assistant. Answer academic questions only. Be concise and educational."),
     MessagesPlaceholder(variable_name="history"),
@@ -39,7 +45,6 @@ prompt = ChatPromptTemplate.from_messages([
 
 chain = prompt | llm
 
-# MongoDB Memory setup
 def get_memory(session_id: str):
     uri = os.getenv("MONGO_URI")
     if not uri:
@@ -59,18 +64,19 @@ bot_with_history = RunnableWithMessageHistory(
     history_messages_key="history"
 )
 
+# --- FRONTEND SE MATCH KARNE KE LIYE YAHAN 'question' KIYA HAI ---
 class ChatInput(BaseModel):
     session_id: str
-    message: str  # Frontend 'message' bhej raha hai, isliye isay 'message' kar diya
+    question: str  # Frontend 'question' bhej raha hai
 
 @app.post("/chat")
 async def chat_endpoint(data: ChatInput):
     try:
-        if not data.message.strip():
+        if not data.question.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
 
         response = bot_with_history.invoke(
-            {"question": data.message},
+            {"question": data.question},
             config={"configurable": {"session_id": data.session_id}}
         )
         return {"response": response.content}
