@@ -3,82 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Bot | AI Companion</title>
+    <title>Study AI | Elite Workspace</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        body { background: radial-gradient(circle at top left, #1e1b4b, #0f172a); min-height: 100vh; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        #chat-box::-webkit-scrollbar { width: 4px; }
-        #chat-box::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
-        .message-anim { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        :root { --primary: #8b5cf6; --secondary: #ec4899; }
+        body { font-family: 'Outfit', sans-serif; background: #020617; overflow: hidden; color: #f8fafc; }
+        
+        /* Animated Background */
+        .bg-animate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 100%); z-index: -1; }
+        .blob { position: absolute; width: 600px; height: 600px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%); filter: blur(80px); border-radius: 50%; animation: move 25s infinite alternate; }
+        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(30%, 30%); } }
+
+        /* Glassmorphism */
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .ai-card { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px 24px 24px 4px; }
+        .user-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px 24px 4px 24px; box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4); }
+        
+        /* Custom UI */
+        .typing-dot { width: 6px; height: 6px; background: var(--secondary); border-radius: 50%; animation: blink 1.4s infinite both; }
+        @keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
+        pre code { border-radius: 12px !important; font-size: 13px !important; background: #000000aa !important; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
-    <div class="w-full max-w-lg h-[80vh] flex flex-col glass rounded-2xl shadow-2xl overflow-hidden">
-        <div class="p-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/50">
-                    <span class="text-xl font-bold text-white">S</span>
-                </div>
-                <div>
-                    <h1 class="text-white font-semibold leading-tight">Study Bot</h1>
-                    <p class="text-indigo-400 text-xs flex items-center gap-1">● Online</p>
-                </div>
-            </div>
-        </div>
+<body class="flex h-screen p-2 md:p-6">
 
-        <div id="chat-box" class="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col">
-            <div class="bot bg-white/10 text-white p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm message-anim">
-                Hello! I'm your AI Study Assistant. How can I help you today?
-            </div>
-        </div>
+    <div class="bg-animate"><div class="blob"></div></div>
 
-        <div class="p-4 bg-white/5 border-t border-white/10">
-            <div class="flex gap-2">
-                <input type="text" id="user-input" 
-                    placeholder="Ask a question..." 
-                    class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm">
-                <button onclick="sendMessage()" 
-                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl font-medium transition-all shadow-lg active:scale-95">
-                    Send
+    <div class="glass w-full max-w-7xl mx-auto rounded-[40px] flex overflow-hidden shadow-2xl">
+        
+        <aside class="hidden lg:flex w-72 flex-col p-8 border-r border-white/5">
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-lg">🚀</div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Study<span class="text-fuchsia-500 text-2xl">.</span>Pro</h1>
+            </div>
+
+            <nav class="space-y-3 flex-1">
+                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-4">Quick Tools</p>
+                <button onclick="autoAsk('Summarize my notes')" class="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-slate-300 rounded-2xl text-xs transition-all border border-white/5">
+                    <span>📝</span> Summarize Notes
                 </button>
+                <button onclick="autoAsk('Solve this math problem')" class="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-slate-300 rounded-2xl text-xs transition-all border border-white/5">
+                    <span>🧪</span> Math Solver
+                </button>
+            </nav>
+
+            <div class="mt-auto space-y-4">
+                <button onclick="location.reload()" class="w-full py-3 rounded-2xl border border-white/10 text-xs text-slate-400 hover:text-white transition-all">Clear Session</button>
+                <div class="flex items-center gap-3 p-3 glass rounded-2xl">
+                    <div class="w-8 h-8 rounded-full bg-fuchsia-500 flex items-center justify-center font-bold text-xs">TZ</div>
+                    <div class="text-[10px]">
+                        <p class="text-white font-bold">Tayyaba Zahra</p>
+                        <p class="text-fuchsia-400 animate-pulse">Elite Member</p>
+                    </div>
+                </div>
             </div>
-        </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col relative">
+            <header class="h-20 flex items-center justify-between px-8 border-b border-white/5 bg-slate-900/20">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">System Online</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="window.print()" class="p-2 text-slate-400 hover:text-fuchsia-400 transition-colors">🖨️</button>
+                </div>
+            </header>
+
+            <div id="chat-box" class="flex-1 overflow-y-auto p-6 md:px-20 py-10 space-y-8">
+                <div class="flex gap-4 ai-card p-6 max-w-4xl mx-auto">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center">🤖</div>
+                    <div class="text-[15px] leading-relaxed">
+                        Welcome, **Tayyaba**. Your elite study workspace is active. 
+                        How can I assist your academic journey today?
+                    </div>
+                </div>
+            </div>
+
+            <div id="typing" class="hidden px-20 py-4 flex items-center gap-2">
+                <div class="typing-dot"></div><div class="typing-dot" style="animation-delay: 0.2s"></div><div class="typing-dot" style="animation-delay: 0.4s"></div>
+            </div>
+
+            <footer class="p-6 md:p-10">
+                <div class="max-w-4xl mx-auto space-y-4">
+                    <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                        <button onclick="autoAsk('Explain Quantum Physics')" class="whitespace-nowrap px-4 py-2 rounded-full border border-white/5 bg-white/5 text-[10px] text-slate-400 hover:border-fuchsia-500 transition-all">Explain Quantum Physics</button>
+                        <button onclick="autoAsk('Help with Python Code')" class="whitespace-nowrap px-4 py-2 rounded-full border border-white/5 bg-white/5 text-[10px] text-slate-400 hover:border-fuchsia-500 transition-all">Python Coding</button>
+                    </div>
+
+                    <div class="glass p-2 rounded-3xl flex items-center gap-2 border-white/20 focus-within:ring-2 ring-fuchsia-500/30 transition-all shadow-2xl">
+                        <button id="mic-btn" onclick="startVoice()" class="p-3 text-slate-400 hover:text-fuchsia-400 transition-colors">🎙️</button>
+                        <input type="text" id="user-input" placeholder="Ask StudyPro AI anything..." 
+                            class="flex-1 bg-transparent border-none text-white px-4 py-3 focus:outline-none text-[15px]">
+                        <button onclick="sendMessage()" class="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:scale-105 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-tighter transition-all shadow-lg active:scale-95">
+                            Analyze
+                        </button>
+                    </div>
+                </div>
+            </footer>
+        </main>
     </div>
 
     <script>
+        const chatBox = document.getElementById('chat-box');
+        const typing = document.getElementById('typing');
+
+        function autoAsk(txt) { document.getElementById('user-input').value = txt; sendMessage(); }
+
+        function startVoice() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return;
+            const rec = new SpeechRecognition();
+            document.getElementById('mic-btn').innerHTML = '🔴';
+            rec.start();
+            rec.onresult = (e) => {
+                document.getElementById('user-input').value = e.results[0][0].transcript;
+                document.getElementById('mic-btn').innerHTML = '🎙️';
+                sendMessage();
+            };
+        }
+
         async function sendMessage() {
             const input = document.getElementById('user-input');
-            const box = document.getElementById('chat-box');
-            if(!input.value.trim()) return;
+            const question = input.value.trim();
+            if (!question) return;
 
-            // User Message
-            const userMsg = input.value;
-            box.innerHTML += `<div class="self-end bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] text-sm message-anim shadow-md">${userMsg}</div>`;
+            chatBox.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="user-card p-5 text-[15px] max-w-[80%] text-white shadow-xl">
+                        ${question}
+                    </div>
+                </div>`;
+            
             input.value = '';
-            box.scrollTop = box.scrollHeight;
+            typing.classList.remove('hidden');
+            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
 
             try {
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userMsg, session_id: "demo-user" })
+                    body: JSON.stringify({ session_id: "tayyaba_final", question: question })
                 });
-                const data = await response.json();
                 
-                // Bot Response
-                box.innerHTML += `<div class="bot bg-white/10 text-white p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm message-anim">${data.response}</div>`;
-            } catch (e) {
-                box.innerHTML += `<div class="bg-red-500/20 text-red-200 p-3 rounded-xl text-xs text-center">Connection error. Please check your backend.</div>`;
+                const data = await response.json();
+                typing.classList.add('hidden');
+                
+                const botReply = marked.parse(data.response || "System Error: Missing Response");
+
+                chatBox.innerHTML += `
+                    <div class="flex gap-4 ai-card p-6 max-w-4xl shadow-sm">
+                        <div class="w-10 h-10 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center">🤖</div>
+                        <div class="text-[15px] leading-relaxed text-slate-200 w-full overflow-hidden">
+                            ${botReply}
+                        </div>
+                    </div>`;
+                
+                document.querySelectorAll('pre code').forEach((el) => hljs.highlightElement(el));
+
+            } catch (error) {
+                typing.classList.add('hidden');
+                chatBox.innerHTML += `<p class="text-center text-red-500 text-[10px] font-bold">API CONNECTION FAILED</p>`;
             }
-            box.scrollTop = box.scrollHeight;
+            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
         }
 
-        // Allow 'Enter' key to send
-        document.getElementById('user-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') sendMessage();
-        });
+        document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
     </script>
 </body>
 </html>
