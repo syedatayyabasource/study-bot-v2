@@ -1,3 +1,4 @@
+from mangum import Mangum
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
@@ -84,3 +85,4 @@ async def chat_endpoint(data: ChatInput):
     except Exception as e:
         print(f"ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+handler = Mangum(app)
