@@ -11,6 +11,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 load_dotenv()
 
 app = FastAPI(title="AI Study Assistant")
+app = app
 
 # AI Setup with error checking
 api_key = os.getenv("GROQ_API_KEY")
@@ -82,9 +83,12 @@ async def chat_endpoint(data: ChatInput):
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 @app.get("/")
-def home():
+def home():   
     return {
         "status": "Study Bot is Live!",
         "mongo_status": "Configured" if os.getenv("MONGO_URI") else "Missing",
         "groq_status": "Configured" if os.getenv("GROQ_API_KEY") else "Missing"
+
     }
+    # if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
