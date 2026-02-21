@@ -1,6 +1,9 @@
 fastapi
 uvicorn
+mangum
 langchain-groq
+langchain-mongodb
 python-dotenv
 pymongo
 motor
+pydantic
