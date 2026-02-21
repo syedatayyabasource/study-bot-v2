@@ -3,144 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study AI | Elite Workspace</title>
+    <title>Study Bot AI | Elite Neural Access</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        :root { --primary: #8b5cf6; --secondary: #ec4899; }
-        body { font-family: 'Outfit', sans-serif; background: #020617; overflow: hidden; color: #f8fafc; }
+        :root { --primary: #8b5cf6; --secondary: #d946ef; --accent: #4f46e5; }
+        
+        /* 🚫 REMOVE SCROLLBAR BUT KEEP SCROLLING */
+        * { scrollbar-width: none; -ms-overflow-style: none; }
+        *::-webkit-scrollbar { display: none; }
+
+        body { font-family: 'Outfit', sans-serif; background: #030712; overflow: hidden; color: #f8fafc; margin: 0; }
         
         /* Animated Background */
-        .bg-animate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 100%); z-index: -1; }
-        .blob { position: absolute; width: 600px; height: 600px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%); filter: blur(80px); border-radius: 50%; animation: move 25s infinite alternate; }
-        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(30%, 30%); } }
+        .bg-animate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #111827 0%, #030712 100%); z-index: -1; }
+        .blob { position: absolute; width: 700px; height: 700px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(217, 70, 239, 0.1) 100%); filter: blur(120px); border-radius: 50%; animation: move 20s infinite alternate; }
+        @keyframes move { from { transform: translate(-15%, -15%); } to { transform: translate(25%, 25%); } }
 
-        /* Glassmorphism */
-        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .ai-card { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px 24px 24px 4px; }
-        .user-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px 24px 4px 24px; box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4); }
+        /* Login System */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); background: #030712; }
+        .login-glass { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 3.5rem; border-radius: 48px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7); }
+        .login-input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: white; padding: 14px 24px; border-radius: 18px; width: 100%; margin-bottom: 18px; outline: none; transition: 0.3s; }
+        .login-input:focus { border-color: var(--primary); background: rgba(139,92,246,0.05); }
+
+        /* App Reveal Animation */
+        #main-app { opacity: 0; transform: scale(1.05); transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1); filter: blur(20px); visibility: hidden; }
+        .authorized #main-app { opacity: 1; transform: scale(1); filter: blur(0); visibility: visible; }
+        .authorized #login-screen { opacity: 0; visibility: hidden; transform: scale(0.9) translateY(-100px); }
+
+        /* Cards & UI */
+        .glass { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .ai-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 32px 32px 32px 8px; position: relative; }
+        .user-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 32px 32px 8px 32px; box-shadow: 0 15px 35px -10px rgba(139, 92, 246, 0.4); }
+        .shimmer-text { background: linear-gradient(90deg, #fff 0%, #a78bfa 50%, #fff 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 4s linear infinite; }
+        @keyframes shimmer { to { background-position: 200% center; } }
         
-        /* Custom UI */
-        .typing-dot { width: 6px; height: 6px; background: var(--secondary); border-radius: 50%; animation: blink 1.4s infinite both; }
-        @keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
-        pre code { border-radius: 12px !important; font-size: 13px !important; background: #000000aa !important; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .copy-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 10px; font-size: 10px; opacity: 0; transition: 0.3s; color: #a78bfa; }
+        .ai-card:hover .copy-btn { opacity: 1; }
     </style>
 </head>
-<body class="flex h-screen p-2 md:p-6">
+<body class="h-screen overflow-hidden">
 
     <div class="bg-animate"><div class="blob"></div></div>
 
-    <div class="glass w-full max-w-7xl mx-auto rounded-[40px] flex overflow-hidden shadow-2xl">
-        
-        <aside class="hidden lg:flex w-72 flex-col p-8 border-r border-white/5">
-            <div class="flex items-center gap-3 mb-10">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-lg">🚀</div>
-                <h1 class="text-xl font-bold tracking-tight text-white">Study<span class="text-fuchsia-500 text-2xl">.</span>Pro</h1>
-            </div>
+    <section id="login-screen">
+        <div class="login-glass">
+            <div class="w-16 h-16 rounded-[22px] bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-2xl mx-auto mb-8 text-2xl">🎓</div>
+            <h2 class="text-3xl font-bold mb-2">Neural Access</h2>
+            <p class="text-slate-500 text-[10px] uppercase tracking-[0.4em] mb-10">Verification Required</p>
+            <input type="text" id="username" class="login-input" placeholder="Neural ID (Tayyaba)">
+            <input type="password" id="password" class="login-input" placeholder="Access Key">
+            <button onclick="checkLogin()" class="w-full mt-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 py-4 rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all">Verify Identity</button>
+            <p id="error-msg" class="text-red-500 text-[10px] mt-6 font-bold opacity-0 tracking-widest">INVALID PARAMETERS</p>
+        </div>
+    </section>
 
-            <nav class="space-y-3 flex-1">
-                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-4">Quick Tools</p>
-                <button onclick="autoAsk('Summarize my notes')" class="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-slate-300 rounded-2xl text-xs transition-all border border-white/5">
-                    <span>📝</span> Summarize Notes
-                </button>
-                <button onclick="autoAsk('Solve this math problem')" class="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-slate-300 rounded-2xl text-xs transition-all border border-white/5">
-                    <span>🧪</span> Math Solver
-                </button>
-            </nav>
+    <div id="main-app" class="flex h-screen p-3 md:p-8">
+        <div class="glass w-full max-w-7xl mx-auto rounded-[48px] flex overflow-hidden">
+            
+            <aside class="hidden lg:flex w-80 flex-col p-10 border-r border-white/5 bg-black/10">
+                <div class="flex items-center gap-4 mb-14">
+                    <div class="w-12 h-12 rounded-[18px] bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(139,92,246,0.3)]">🎓</div>
+                    <h1 class="text-xl font-bold text-white">Study Bot<span class="text-fuchsia-500">.</span>AI</h1>
+                </div>
+                <nav class="space-y-4 flex-1">
+                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-[0.2em] mb-6">Analytic Modules</p>
+                    <button onclick="autoAsk('Generate a Roadmap')" class="w-full flex items-center gap-4 px-6 py-4 bg-white/5 hover:bg-white/10 text-slate-300 rounded-[22px] text-xs transition-all border border-white/5">📔 Roadmap Architect</button>
+                    <button onclick="autoAsk('Deep Analysis')" class="w-full flex items-center gap-4 px-6 py-4 bg-white/5 hover:bg-white/10 text-slate-300 rounded-[22px] text-xs transition-all border border-white/5">🧬 Deep Analysis</button>
+                </nav>
+                <div class="mt-auto flex items-center gap-4 p-2 bg-white/5 rounded-2xl border border-white/5">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-600 to-fuchsia-500 flex items-center justify-center font-bold text-xs">TZ</div>
+                    <div><p class="text-white text-[11px] font-bold">Tayyaba Zahra</p><p class="text-[9px] text-fuchsia-400 lowercase tracking-tighter">Premium  Analyst</p></div>
+                </div>
+            </aside>
 
-            <div class="mt-auto space-y-4">
-                <button onclick="location.reload()" class="w-full py-3 rounded-2xl border border-white/10 text-xs text-slate-400 hover:text-white transition-all">Clear Session</button>
-                <div class="flex items-center gap-3 p-3 glass rounded-2xl">
-                    <div class="w-8 h-8 rounded-full bg-fuchsia-500 flex items-center justify-center font-bold text-xs">TZ</div>
-                    <div class="text-[10px]">
-                        <p class="text-white font-bold">Tayyaba Zahra</p>
-                        <p class="text-fuchsia-400 animate-pulse">Elite Member</p>
+            <main class="flex-1 flex flex-col relative">
+                <header class="h-24 flex items-center justify-between px-10 border-b border-white/5">
+                    <div class="bg-black/20 px-4 py-2 rounded-full border border-white/5 text-[10px] font-bold text-slate-400 tracking-[0.3em]">RESEARCH GRADE ENGINE</div>
+                    <button onclick="window.print()" class="text-slate-400 hover:text-fuchsia-400">🖨️</button>
+                </header>
+
+                <div id="chat-box" class="flex-1 overflow-y-auto p-8 md:px-24 py-12 space-y-10">
+                    <div class="flex gap-8 ai-card p-12 max-w-5xl mx-auto shadow-2xl">
+                        <div class="text-2xl">🤖</div>
+                        <div class="space-y-4">
+                            <h2 class="text-3xl shimmer-text font-bold">Hello Tayyaba, I am your AI Study Assistant. </h2>
+                            <p class="text-slate-400 font-light">I am ready for high-level research. What shall we analyze today?</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </aside>
 
-        <main class="flex-1 flex flex-col relative">
-            <header class="h-20 flex items-center justify-between px-8 border-b border-white/5 bg-slate-900/20">
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">System Online</span>
-                </div>
-                <div class="flex gap-4">
-                    <button onclick="window.print()" class="p-2 text-slate-400 hover:text-fuchsia-400 transition-colors">🖨️</button>
-                </div>
-            </header>
-
-            <div id="chat-box" class="flex-1 overflow-y-auto p-6 md:px-20 py-10 space-y-8">
-                <div class="flex gap-4 ai-card p-6 max-w-4xl mx-auto">
-                    <div class="w-10 h-10 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center">🤖</div>
-                    <div class="text-[15px] leading-relaxed">
-                        Welcome, **Tayyaba**. Your elite study workspace is active. 
-                        How can I assist your academic journey today?
+                <footer class="p-8 md:p-14">
+                    <div class="max-w-4xl mx-auto">
+                        <div id="typing" class="hidden pb-4 flex items-center gap-2 px-6">
+                            <div class="w-1.5 h-1.5 bg-fuchsia-500 rounded-full animate-bounce"></div>
+                            <span class="text-[9px] text-fuchsia-500 font-black tracking-widest ml-2 uppercase">Neural Processing...</span>
+                        </div>
+                        <div class="glass p-3 rounded-[32px] flex items-center gap-3 border-white/10 shadow-2xl">
+                            <input type="text" id="user-input" placeholder="Execute a deep query..." class="flex-1 bg-transparent border-none text-white px-6 focus:outline-none">
+                            <button onclick="sendMessage()" class="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-10 py-4 rounded-[22px] font-bold text-xs uppercase tracking-widest active:scale-95 transition-all">Analyze</button>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <div id="typing" class="hidden px-20 py-4 flex items-center gap-2">
-                <div class="typing-dot"></div><div class="typing-dot" style="animation-delay: 0.2s"></div><div class="typing-dot" style="animation-delay: 0.4s"></div>
-            </div>
-
-            <footer class="p-6 md:p-10">
-                <div class="max-w-4xl mx-auto space-y-4">
-                    <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                        <button onclick="autoAsk('Explain Quantum Physics')" class="whitespace-nowrap px-4 py-2 rounded-full border border-white/5 bg-white/5 text-[10px] text-slate-400 hover:border-fuchsia-500 transition-all">Explain Quantum Physics</button>
-                        <button onclick="autoAsk('Help with Python Code')" class="whitespace-nowrap px-4 py-2 rounded-full border border-white/5 bg-white/5 text-[10px] text-slate-400 hover:border-fuchsia-500 transition-all">Python Coding</button>
-                    </div>
-
-                    <div class="glass p-2 rounded-3xl flex items-center gap-2 border-white/20 focus-within:ring-2 ring-fuchsia-500/30 transition-all shadow-2xl">
-                        <button id="mic-btn" onclick="startVoice()" class="p-3 text-slate-400 hover:text-fuchsia-400 transition-colors">🎙️</button>
-                        <input type="text" id="user-input" placeholder="Ask StudyPro AI anything..." 
-                            class="flex-1 bg-transparent border-none text-white px-4 py-3 focus:outline-none text-[15px]">
-                        <button onclick="sendMessage()" class="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:scale-105 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-tighter transition-all shadow-lg active:scale-95">
-                            Analyze
-                        </button>
-                    </div>
-                </div>
-            </footer>
-        </main>
+                </footer>
+            </main>
+        </div>
     </div>
 
     <script>
+        // 🔐 LOGIN LOGIC
+        function checkLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            if(user.toLowerCase() === "tayyaba" && pass === "Tayyaba786") {
+                document.body.classList.add('authorized');
+            } else {
+                document.getElementById('error-msg').style.opacity = "1";
+                setTimeout(() => document.getElementById('error-msg').style.opacity = "0", 3000);
+            }
+        }
+
         const chatBox = document.getElementById('chat-box');
         const typing = document.getElementById('typing');
 
         function autoAsk(txt) { document.getElementById('user-input').value = txt; sendMessage(); }
+        function copyToClipboard(text, btn) { navigator.clipboard.writeText(text); btn.innerHTML = 'COPIED'; setTimeout(() => btn.innerHTML = 'COPY', 2000); }
 
-        function startVoice() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return;
-            const rec = new SpeechRecognition();
-            document.getElementById('mic-btn').innerHTML = '🔴';
-            rec.start();
-            rec.onresult = (e) => {
-                document.getElementById('user-input').value = e.results[0][0].transcript;
-                document.getElementById('mic-btn').innerHTML = '🎙️';
-                sendMessage();
-            };
-        }
-
+        // 🤖 CHATBOT LOGIC (REPLY FIX)
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const question = input.value.trim();
             if (!question) return;
 
-            chatBox.innerHTML += `
-                <div class="flex justify-end">
-                    <div class="user-card p-5 text-[15px] max-w-[80%] text-white shadow-xl">
-                        ${question}
-                    </div>
-                </div>`;
-            
+            chatBox.innerHTML += `<div class="flex justify-end"><div class="user-card p-6 text-[15px] max-w-[75%] text-white font-medium">${question}</div></div>`;
             input.value = '';
             typing.classList.remove('hidden');
             chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
@@ -149,27 +146,29 @@
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ session_id: "tayyaba_final", question: question })
+                    body: JSON.stringify({ session_id: "tayyaba_elite", question: question })
                 });
                 
                 const data = await response.json();
                 typing.classList.add('hidden');
                 
-                const botReply = marked.parse(data.response || "System Error: Missing Response");
+                const botReplyRaw = data.response || "Neural response unavailable.";
+                const botReplyHtml = marked.parse(botReplyRaw);
 
-                chatBox.innerHTML += `
-                    <div class="flex gap-4 ai-card p-6 max-w-4xl shadow-sm">
-                        <div class="w-10 h-10 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center">🤖</div>
-                        <div class="text-[15px] leading-relaxed text-slate-200 w-full overflow-hidden">
-                            ${botReply}
-                        </div>
+                const msgDiv = document.createElement('div');
+                msgDiv.className = "flex gap-6 ai-card p-10 max-w-5xl";
+                msgDiv.innerHTML = `
+                    <div class="text-[10px] font-bold text-violet-400">AI</div>
+                    <div class="text-[15px] leading-relaxed text-slate-200 w-full overflow-hidden font-light">
+                        ${botReplyHtml}
+                        <button class="copy-btn" onclick="copyToClipboard(\`${botReplyRaw.replace(/`/g, '\\`')}\`, this)">COPY</button>
                     </div>`;
                 
+                chatBox.appendChild(msgDiv);
                 document.querySelectorAll('pre code').forEach((el) => hljs.highlightElement(el));
-
             } catch (error) {
                 typing.classList.add('hidden');
-                chatBox.innerHTML += `<p class="text-center text-red-500 text-[10px] font-bold">API CONNECTION FAILED</p>`;
+                chatBox.innerHTML += `<p class="text-center text-red-500 text-[10px]">SYNC ERROR: CHECK BACKEND</p>`;
             }
             chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
         }
