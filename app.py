@@ -1,4 +1,6 @@
+from mangum import Mangum
 import os
+from fastapi import FastAPI
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -88,3 +90,4 @@ async def chat_endpoint(data: ChatInput):
 
 # Vercel Handler
 handler = Mangum(app)
+
