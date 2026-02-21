@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Bot | AI Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: radial-gradient(circle at top left, #1e1b4b, #0f172a); min-height: 100vh; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        #chat-box::-webkit-scrollbar { width: 4px; }
+        #chat-box::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
+        .message-anim { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="w-full max-w-lg h-[80vh] flex flex-col glass rounded-2xl shadow-2xl overflow-hidden">
+        <div class="p-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/50">
+                    <span class="text-xl font-bold text-white">S</span>
+                </div>
+                <div>
+                    <h1 class="text-white font-semibold leading-tight">Study Bot</h1>
+                    <p class="text-indigo-400 text-xs flex items-center gap-1">● Online</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="chat-box" class="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col">
+            <div class="bot bg-white/10 text-white p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm message-anim">
+                Hello! I'm your AI Study Assistant. How can I help you today?
+            </div>
+        </div>
+
+        <div class="p-4 bg-white/5 border-t border-white/10">
+            <div class="flex gap-2">
+                <input type="text" id="user-input" 
+                    placeholder="Ask a question..." 
+                    class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-all text-sm">
+                <button onclick="sendMessage()" 
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl font-medium transition-all shadow-lg active:scale-95">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const box = document.getElementById('chat-box');
+            if(!input.value.trim()) return;
+
+            // User Message
+            const userMsg = input.value;
+            box.innerHTML += `<div class="self-end bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] text-sm message-anim shadow-md">${userMsg}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userMsg, session_id: "demo-user" })
+                });
+                const data = await response.json();
+                
+                // Bot Response
+                box.innerHTML += `<div class="bot bg-white/10 text-white p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm message-anim">${data.response}</div>`;
+            } catch (e) {
+                box.innerHTML += `<div class="bg-red-500/20 text-red-200 p-3 rounded-xl text-xs text-center">Connection error. Please check your backend.</div>`;
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // Allow 'Enter' key to send
+        document.getElementById('user-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
